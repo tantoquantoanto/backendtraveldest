@@ -36,18 +36,27 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        let user = await UsersModel.findOne({ email: profile._json.email });
+        const email = profile._json.email;
+
+        // Verifica la presenza dell'email
+        if (!email) {
+          return done(new Error("L'email non è disponibile nel profilo GitHub"), null);
+        }
+
+        let user = await UsersModel.findOne({ email });
+
         if (!user) {
           const userToSave = new UsersModel({
             name: profile.displayName || profile.username,
-            surname: profile.username, // GitHub non restituisce surname, quindi usiamo username come fallback
+            surname: profile.username,
             username: profile.username,
-            email: profile._json.email,
+            email, 
             dob: new Date(),
             password: "12345678",
             role: "user",
             img: profile._json.avatar_url,
           });
+
           user = await userToSave.save();
         }
         return done(null, user);
@@ -69,9 +78,8 @@ github.get(
   passport.authenticate("github", { failureRedirect: "/" }),
   async (req, res) => {
     try {
-      const user = await UsersModel.findOne({ email: req.user._json.email });
+      const user = await UsersModel.findOne({ email: req.user.email });
 
-      // Creazione del payload per il token JWT
       const payload = {
         userId: user._id,
         email: user.email,
@@ -80,7 +88,6 @@ github.get(
 
       const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
 
-      // Redirect alla pagina di successo con il token JWT
       const redirectUrl = `${process.env.VITE_CLIENT_BASE_URL}/success/${encodeURIComponent(token)}`;
       res.redirect(redirectUrl);
     } catch (error) {
