@@ -7,7 +7,6 @@ const jwt = require('jsonwebtoken')
 const UsersModel = require('../models/UsersModel')
 require('dotenv').config()
 
-
 github.use(
     session({
         secret: process.env.CLIENT_SECRET,
@@ -16,11 +15,8 @@ github.use(
     })
 )
 
-
 github.use(passport.initialize())
-
 github.use(passport.session())
-
 
 passport.serializeUser((user, done) => {
     done(null, user)
@@ -29,7 +25,6 @@ passport.serializeUser((user, done) => {
 passport.deserializeUser((user, done) => {
     done(null, user)
 })
-
 
 passport.use(
     new GitHubStrategy(
@@ -44,12 +39,12 @@ passport.use(
                 if (!user) {
                     const { name, email, login, avatar_url } = profile._json;
                     
-                    // Dividi il nome completo in nome e cognome
-                    const [givenName, familyName = ""] = name ? name.split(" ") : [login, ""];
+                    // Gestione del nome e cognome in base alla loro presenza o meno
+                    const [givenName = login, familyName = "User"] = name ? name.split(" ") : [login, "User"];
                     
                     const userToSave = new UsersModel({
-                        name: givenName,
-                        surname: familyName,
+                        name: givenName || "GitHub",
+                        surname: familyName || "User",
                         username: `${givenName}_${familyName}` || login,
                         email: email || `${login}@github.com`,
                         dob: new Date(),
@@ -80,11 +75,11 @@ github.get(
             if (!user) {
                 const { name, email, login, avatar_url } = req.user._json;
                 
-                const [givenName, familyName = ""] = name ? name.split(" ") : [login, ""];
+                const [givenName = login, familyName = "User"] = name ? name.split(" ") : [login, "User"];
                 
                 const newUser = new UsersModel({
-                    name: givenName,
-                    surname: familyName,
+                    name: givenName || "GitHub",
+                    surname: familyName || "User",
                     username: `${givenName}_${familyName}` || login,
                     email: email || `${login}@github.com`,
                     dob: new Date(),
