@@ -32,7 +32,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "http://localhost:4042/auth/google/callback",
+      callbackURL: process.env.GOOGLE_CALLBACK_URL,
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -63,7 +63,7 @@ google.get(
   "/auth/google",
   passport.authenticate("google", { scope: ["email", "profile"] }),
   (req, res) => {
-    const redirectUrl = `http://localhost:5173/success?user=${encodeURIComponent(
+    const redirectUrl = `${process.env.VITE_CLIENT_BASE_URL}/success?user=${encodeURIComponent(
       JSON.stringify(req.user)
     )}`;
     res.redirect(redirectUrl);
