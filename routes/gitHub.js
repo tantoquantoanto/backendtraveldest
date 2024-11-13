@@ -47,7 +47,7 @@ passport.use(
 );
 
 github.get('/auth/github', passport.authenticate('github', {scope: ['user:email']}), (req, res, next) => {
-    const redirectUrl = `http://localhost:5173/success?user=${encodeURIComponent(JSON.stringify(req.user))}`
+    const redirectUrl = `${process.env.VITE_CLIENT_BASE_URL}/success?user=${encodeURIComponent(JSON.stringify(req.user))}`
     res.redirect(redirectUrl)
 })
 
@@ -60,12 +60,12 @@ github.get(
         console.log(user)
 
         const token = jwt.sign(user, process.env.JWT_SECRET);
-        const redirectUrl = `http://localhost:5173/success/${encodeURIComponent(token)}`
+        const redirectUrl = `${process.env.VITE_CLIENT_BASE_URL}/success/${encodeURIComponent(token)}`
         res.redirect(redirectUrl)
     })
 
 github.get('/success', (req, res) => {
-    res.redirect('http://localhost:5173/home')
+    res.redirect(`${process.env.VITE_CLIENT_BASE_URL}/home`)
 })
 
 github.get('/oauth/logout', (req, res) => {
@@ -76,7 +76,7 @@ github.get('/oauth/logout', (req, res) => {
 
         req.session.destroy((error) => {
             if (error) {
-                // fai qualcosa
+                console.log(error || error.message)
             }
 
             res.redirect('/')
