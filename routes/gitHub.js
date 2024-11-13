@@ -4,9 +4,8 @@ const passport = require('passport');
 const GitHubStrategy = require('passport-github2').Strategy;
 const session = require('express-session');
 const jwt = require('jsonwebtoken');
-const UsersModel = require('../models/UsersModel');
 require('dotenv').config();
-
+const UsersModel = require('../models/UsersModel');
 
 github.use(
   session({
@@ -38,19 +37,17 @@ passport.use(
       try {
         const email = profile._json.email;
 
-        // Verifica la presenza dell'email
-        if (!email) {
-          return done(new Error("L'email non è disponibile nel profilo GitHub"), null);
-        }
-
-        let user = await UsersModel.findOne({ email });
+        
+        let user = email
+          ? await UsersModel.findOne({ email })
+          : await UsersModel.findOne({ username: profile.username });
 
         if (!user) {
           const userToSave = new UsersModel({
             name: profile.displayName || profile.username,
             surname: profile.username,
             username: profile.username,
-            email, 
+            email: email || `${profile.username}@github.com`, 
             dob: new Date(),
             password: "12345678",
             role: "user",
@@ -68,18 +65,16 @@ passport.use(
   )
 );
 
-github.get(
-  "/auth/github",
-  passport.authenticate("github", { scope: ["user:email"] })
-);
+github.get("/auth/github", passport.authenticate("github", { scope: ["user:email"] }));
 
 github.get(
   "/auth/github/callback",
   passport.authenticate("github", { failureRedirect: "/" }),
   async (req, res) => {
     try {
-      const user = await UsersModel.findOne({ email: req.user.email });
+      const user = await UsersModel.findOne({ email: req.user.email }) || await UsersModel.findOne({ username: req.user.username });
 
+     
       const payload = {
         userId: user._id,
         email: user.email,
@@ -88,6 +83,7 @@ github.get(
 
       const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
 
+      
       const redirectUrl = `${process.env.VITE_CLIENT_BASE_URL}/success/${encodeURIComponent(token)}`;
       res.redirect(redirectUrl);
     } catch (error) {
