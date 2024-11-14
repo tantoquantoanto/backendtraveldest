@@ -86,7 +86,7 @@ users.get("/users", async (req, res, next) => {
   }
 });
 
-// GET user by ID
+
 users.get("/users/:userId", isUserAuthorizedToProfile, async (req, res, next) => {
   const { userId } = req.params;
   try {
@@ -105,7 +105,7 @@ users.get("/users/:userId", isUserAuthorizedToProfile, async (req, res, next) =>
   }
 });
 
-// POST create new user
+
 users.post("/users/create",  async (req, res, next) => {
   try {
     const { name, surname, username, email, password, isActive, role, img } =
@@ -135,7 +135,7 @@ users.post("/users/create",  async (req, res, next) => {
   }
 });
 
-// PATCH update user by ID
+
 users.patch("/users/update/:userId", isUserAuthorizedToProfile, async (req, res, next) => {
   const { userId } = req.params;
   try {
@@ -165,7 +165,7 @@ users.patch("/users/update/:userId", isUserAuthorizedToProfile, async (req, res,
   }
 });
 
-// DELETE user by ID
+
 users.delete("/users/delete/:userId", isUserAuthorizedToProfile, async (req, res, next) => {
   const { userId } = req.params;
   try {
@@ -183,6 +183,8 @@ users.delete("/users/delete/:userId", isUserAuthorizedToProfile, async (req, res
     next(error);
   }
 });
+
+//USER LIKED DESTINATIONS ROUTES
 
 users.post("/users/:userId/like/:destinationId", async (req, res, next) => {
   const { userId, destinationId } = req.params;
